@@ -157,6 +157,7 @@ pub mod gl;
 #[cfg(feature = "objectarray")] pub mod objectarray;
 #[cfg(feature = "objidl")] pub mod objidl;
 #[cfg(feature = "objidlbase")] pub mod objidlbase;
+#[cfg(feature = "objsafe")] pub mod objsafe;
 #[cfg(feature = "ocidl")] pub mod ocidl;
 #[cfg(feature = "ole2")] pub mod ole2;
 #[cfg(feature = "oleauto")] pub mod oleauto;
