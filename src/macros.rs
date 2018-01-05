@@ -143,6 +143,7 @@ macro_rules! RIDL {
         impl $interface {
             $(RIDL!{@method $(#[$($attrs)*])* fn $method($($p: $t,)*) -> $rtr})+
         }
+        RIDL!{@asref $interface}
         RIDL!{@uuid $interface $($uuid),+}
     );
     (#[uuid($($uuid:expr),+)]
@@ -153,8 +154,10 @@ macro_rules! RIDL {
         pub struct $interface {
             pub lpVtbl: *const $vtbl,
         }
+        RIDL!{@asref $interface}
+        RIDL!{@asref $interface $pinterface}
         RIDL!{@deref $interface $pinterface}
-        RIDL!{@uuid $interface $($uuid),+}
+        RIDL!{@uuid $interface $pinterface $($uuid),+}
     );
     (#[uuid($($uuid:expr),+)]
     interface $interface:ident ($vtbl:ident) : $pinterface:ident ($pvtbl:ident) {$(
@@ -170,8 +173,10 @@ macro_rules! RIDL {
         impl $interface {
             $(RIDL!{@method $(#[$($attrs)*])* fn $method($($p: $t,)*) -> $rtr})+
         }
+        RIDL!{@asref $interface}
+        RIDL!{@asref $interface $pinterface}
         RIDL!{@deref $interface $pinterface}
-        RIDL!{@uuid $interface $($uuid),+}
+        RIDL!{@uuid $interface $pinterface $($uuid),+}
     );
     (@deref $interface:ident $pinterface:ident) => (
         impl $crate::_core::ops::Deref for $interface {
@@ -179,6 +184,21 @@ macro_rules! RIDL {
             #[inline]
             fn deref(&self) -> &$pinterface {
                 unsafe { &*(self as *const $interface as *const $pinterface) }
+            }
+        }
+    );
+    (@asref $interface:ident) => (
+        impl $crate::_core::convert::AsRef<$interface> for $interface {
+            fn as_ref(&self) -> &Self {
+                self
+            }
+        }
+    );
+    (@asref $interface:ident $pinterface:ident) => (
+        impl<T> $crate::_core::convert::AsRef<T> for $interface
+        where $pinterface: AsRef<T> {
+            fn as_ref(&self) -> &T {
+                $crate::_core::ops::Deref::deref(self).as_ref()
             }
         }
     );
@@ -242,6 +262,31 @@ macro_rules! RIDL {
                     Data3: $w2,
                     Data4: [$b1, $b2, $b3, $b4, $b5, $b6, $b7, $b8],
                 }
+            }
+            #[inline]
+            fn impls_iid(iid: &$crate::shared::guiddef::IID) -> bool {
+                $crate::shared::guiddef::IsEqualGUID(&Self::uuidof(), iid)
+            }
+        }
+    );
+    (@uuid $interface:ident $pinterface:ident
+        $l:expr, $w1:expr, $w2:expr,
+        $b1:expr, $b2:expr, $b3:expr, $b4:expr, $b5:expr, $b6:expr, $b7:expr, $b8:expr
+    ) => (
+        impl $crate::Interface for $interface {
+            #[inline]
+            fn uuidof() -> $crate::shared::guiddef::GUID {
+                $crate::shared::guiddef::GUID {
+                    Data1: $l,
+                    Data2: $w1,
+                    Data3: $w2,
+                    Data4: [$b1, $b2, $b3, $b4, $b5, $b6, $b7, $b8],
+                }
+            }
+            #[inline]
+            fn impls_iid(iid: &$crate::shared::guiddef::IID) -> bool {
+                $crate::shared::guiddef::IsEqualGUID(&<Self as $crate::Interface>::uuidof(), iid)
+                    || <$pinterface as $crate::Interface>::impls_iid(iid)
             }
         }
     );

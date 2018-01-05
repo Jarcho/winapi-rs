@@ -14,6 +14,7 @@
 extern crate std;
 
 /// Hack for exported macros
+#[macro_use(write)]
 #[doc(hidden)]
 pub extern crate core as _core;
 
@@ -56,4 +57,5 @@ pub mod ctypes {
 }
 pub trait Interface {
     fn uuidof() -> shared::guiddef::GUID;
+    fn impls_iid(iid: &shared::guiddef::IID) -> bool;
 }
