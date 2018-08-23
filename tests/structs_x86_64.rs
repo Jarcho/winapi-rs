@@ -1626,6 +1626,12 @@ fn um_combaseapi() {
     assert_eq!(size_of::<ServerInformation>(), 16);
     assert_eq!(align_of::<ServerInformation>(), 8);
 }
+#[cfg(feature = "comcat")] #[test]
+fn um_comcat() {
+    use winapi::um::comcat::*;
+    assert_eq!(size_of::<CATEGORYINFO>(), 276);
+    assert_eq!(align_of::<CATEGORYINFO>(), 4);
+}
 #[cfg(feature = "commctrl")] #[test]
 fn um_commctrl() {
     use winapi::um::commctrl::*;
